@@ -1,0 +1,226 @@
+{
+  "workflows": [
+    {
+      "name": "API Key Authentication",
+      "description": "Retrieves and displays detailed information about the authenticated API key, including user details, permissions, and status.",
+      "input": "API key provided via environment variable XAI_API_KEY or explicitly to Client constructor.",
+      "output": "Printed output to stdout with API key info such as redacted_api_key, user_id, name, create_time, acls, and status flags.",
+      "entry_point": "client.auth.get_api_key_info()",
+      "relevant_files": [
+        "src/xai_sdk/auth.py",
+        "src/xai_sdk/client.py"
+      ],
+      "doc": ".exp/design-workflow-1.md"
+    },
+    {
+      "name": "Chat Completions",
+      "description": "Handles multi-turn conversations with the model, supporting streaming, batch sampling, and basic chat interactions.",
+      "input": "CLI flags for streaming (--stream) and number of responses (--n); model name, initial messages, user prompts via stdin.",
+      "output": "Printed model responses to stdout; supports interactive loop until 'exit'.",
+      "entry_point": "client.chat.create(model, messages)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/sync/chat.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-2.md"
+    },
+    {
+      "name": "Collections Management",
+      "description": "Manages vector collections for document storage, embedding, indexing, searching, and retrieval with various chunking configurations.",
+      "input": "Collection parameters like name, model_name, chunk_configuration; document data for upload.",
+      "output": "Printed collection and document metadata; search results with matches and scores.",
+      "entry_point": "client.collections.create(name, model_name)",
+      "relevant_files": [
+        "src/xai_sdk/collections.py",
+        "src/xai_sdk/sync/collections.py"
+      ],
+      "doc": ".exp/design-workflow-3.md"
+    },
+    {
+      "name": "Collections Tool Calling",
+      "description": "Uses collections as tools in agentic chat for semantic search over uploaded documents, demonstrating retrieval-augmented generation.",
+      "input": "Document URLs or content to upload; collection creation params; chat prompt.",
+      "output": "Printed tool calls, search results, citations, and model response with reasoning.",
+      "entry_point": "collections_search(collection_ids)",
+      "relevant_files": [
+        "src/xai_sdk/collections.py",
+        "src/xai_sdk/tools.py",
+        "src/xai_sdk/chat.py"
+      ],
+      "doc": ".exp/design-workflow-4.md"
+    },
+    {
+      "name": "Deferred Chat",
+      "description": "Initiates long-running chat completions polled asynchronously for completion, suitable for compute-intensive tasks.",
+      "input": "CLI flags for timeout (--timeout), poll interval (--interval), n (--n); model, messages.",
+      "output": "Printed response content after polling succeeds or error on timeout.",
+      "entry_point": "chat.defer(timeout, interval)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/poll_timer.py"
+      ],
+      "doc": ".exp/design-workflow-5-deferred-chat.md"
+    },
+    {
+      "name": "Files Management",
+      "description": "Manages file uploads (from path, bytes, file objects), downloads, listing, metadata retrieval, batch operations, and deletions with progress tracking.",
+      "input": "File paths, bytes, or file-like objects; optional progress callbacks; batch lists.",
+      "output": "File metadata objects; content bytes; printed progress and stats.",
+      "entry_point": "client.files.upload(path_or_data)",
+      "relevant_files": [
+        "src/xai_sdk/files.py",
+        "src/xai_sdk/sync/files.py"
+      ],
+      "doc": ".exp/design-workflow-6.md"
+    },
+    {
+      "name": "Chat with Files",
+      "description": "Uploads files and attaches them to chat messages for analysis or vision tasks, demonstrating document or image processing in conversation.",
+      "input": "File path; query prompt for analysis.",
+      "output": "Printed streamed model response analyzing the file; token usage.",
+      "entry_point": "client.files.upload(file_path); user(query, file(file_id))",
+      "relevant_files": [
+        "src/xai_sdk/files.py",
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-7-chat-with-files.md"
+    },
+    {
+      "name": "Function Calling",
+      "description": "Implements client-side tool calling in chat, defining tools with schemas, handling calls, and integrating results into conversation.",
+      "input": "CLI flag for streaming (--stream); user prompts; defined tool functions.",
+      "output": "Printed tool calls, arguments, results, and final responses.",
+      "entry_point": "tool(name, description, parameters)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/tools.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-8.md"
+    },
+    {
+      "name": "Image Generation",
+      "description": "Generates images from text prompts, supporting single or batch generation, with output in base64 or URL format, saved to files.",
+      "input": "CLI flags for n (--n), format (--format), output-dir (--output-dir); prompts via stdin.",
+      "output": "Generated image data saved as JPG files in specified directory.",
+      "entry_point": "client.image.sample(prompt, model, image_format)",
+      "relevant_files": [
+        "src/xai_sdk/image.py",
+        "src/xai_sdk/sync/image.py"
+      ],
+      "doc": ".exp/design-workflow-9-image-generation.md"
+    },
+    {
+      "name": "Image Understanding",
+      "description": "Analyzes images provided via URL or base64 in chat messages, supporting vision models for description or question answering.",
+      "input": "CLI flag for format (--format); image URLs or base64 data; text queries.",
+      "output": "Printed model analysis response; prompt image token count.",
+      "entry_point": "image(url_or_base64, detail)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/image.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-10.md"
+    },
+    {
+      "name": "Models Information",
+      "description": "Lists or retrieves detailed information about available models (language, embedding, image generation), including pricing, capabilities, and limits.",
+      "input": "CLI flags for operation (--operation: list/get), model-type, model-name.",
+      "output": "Printed model details like name, aliases, prices, modalities, max lengths.",
+      "entry_point": "client.models.list_language_models() or get_language_model(name)",
+      "relevant_files": [
+        "src/xai_sdk/models.py",
+        "src/xai_sdk/sync/models.py"
+      ],
+      "doc": ".exp/design-workflow-11.md"
+    },
+    {
+      "name": "Reasoning Tasks",
+      "description": "Utilizes reasoning models with configurable effort levels (low/high) for complex problem-solving, showing reasoning steps and final answers.",
+      "input": "CLI flags for stream (--stream), effort (--effort); prompts via stdin.",
+      "output": "Printed reasoning content, final response, token usage breakdown.",
+      "entry_point": "client.chat.create(model, reasoning_effort)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-12.md"
+    },
+    {
+      "name": "Search Integration",
+      "description": "Integrates real-time search (web, X, news, RSS) into chat with configurable sources, modes (auto/on), filters, and date ranges for up-to-date responses.",
+      "input": "Search parameters like mode, sources (web_source, x_source, etc.), dates; chat prompts.",
+      "output": "Printed responses with citations and source counts.",
+      "entry_point": "SearchParameters(mode, sources, from_date)",
+      "relevant_files": [
+        "src/xai_sdk/search.py",
+        "src/xai_sdk/chat.py"
+      ],
+      "doc": ".exp/design-workflow-13-search-integration.md"
+    },
+    {
+      "name": "Server-Side Tools",
+      "description": "Employs xAI-provided server-side tools (web_search, x_search, code_execution) in agentic workflows, mixing with client-side tools, handling encrypted content.",
+      "input": "Model, tools list, query; optional previous_response_id or encrypted content flag.",
+      "output": "Printed tool calls, outputs, citations, usage, final response.",
+      "entry_point": "web_search(), x_search(), code_execution()",
+      "relevant_files": [
+        "src/xai_sdk/tools.py",
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/search.py"
+      ],
+      "doc": ".exp/design-workflow-14.md"
+    },
+    {
+      "name": "Stored Chat Sessions",
+      "description": "Manages persistent chat sessions via stored completions, allowing continuation with previous_response_id, retrieval, batch get, and deletion.",
+      "input": "store_messages=True; previous_response_id for continuation.",
+      "output": "Responses with IDs; retrieved or deleted stored completions.",
+      "entry_point": "client.chat.create(..., store_messages=True, previous_response_id)",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-15.md"
+    },
+    {
+      "name": "Structured Outputs",
+      "description": "Generates and parses model responses into structured Pydantic models, useful for extracting specific data formats from text or images.",
+      "input": "Pydantic model schema via parse() or response_format; prompts, images.",
+      "output": "Validated structured objects; printed parsed data.",
+      "entry_point": "chat.parse(Model) or response_format=Model",
+      "relevant_files": [
+        "src/xai_sdk/chat.py",
+        "src/xai_sdk/types/chat.py"
+      ],
+      "doc": ".exp/design-workflow-16.md"
+    },
+    {
+      "name": "Telemetry and Observability",
+      "description": "Configures OpenTelemetry tracing for API calls, exporting spans with metadata to console or OTLP backends for monitoring and debugging.",
+      "input": "Telemetry setup (console/otlp), optional custom TracerProvider; environment vars for OTLP.",
+      "output": "Exported traces with attributes like prompts, responses, token usage.",
+      "entry_point": "Telemetry().setup_console_exporter() or setup_otlp_exporter()",
+      "relevant_files": [
+        "src/xai_sdk/telemetry/__init__.py",
+        "src/xai_sdk/telemetry/config.py"
+      ],
+      "doc": ".exp/design-workflow-17-telemetry-and-observability.md"
+    },
+    {
+      "name": "Tokenization",
+      "description": "Tokenizes input text for specific models, returning token IDs, text representations, and byte lengths.",
+      "input": "Text prompt; model name.",
+      "output": "List of token objects printed with ID, string, bytes.",
+      "entry_point": "client.tokenize.tokenize_text(text, model)",
+      "relevant_files": [
+        "src/xai_sdk/tokenizer.py",
+        "src/xai_sdk/sync/tokenizer.py"
+      ],
+      "doc": ".exp/design-workflow-18.md"
+    }
+  ]
+}
